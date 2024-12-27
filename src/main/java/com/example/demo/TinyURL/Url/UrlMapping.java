@@ -19,8 +19,9 @@ public class UrlMapping {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)
     private User user;
-    @Column(name = "createdDate", nullable = false, unique = true, updatable = false)
+    @Column(name = "created_date", nullable = false, unique = true, updatable = false)
     private LocalDateTime createdDate;
+    @Column(name = "expiration_date", nullable = true)
     private LocalDateTime expirationDate;
 
     @PrePersist
@@ -62,5 +63,13 @@ public class UrlMapping {
 
     public void setExpirationDate(LocalDateTime expirationDate) {
         this.expirationDate = expirationDate;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

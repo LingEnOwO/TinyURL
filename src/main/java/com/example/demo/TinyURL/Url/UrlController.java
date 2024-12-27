@@ -1,5 +1,6 @@
 package com.example.demo.TinyURL.Url;
 
+import com.example.demo.TinyURL.ErrorResponse.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,9 @@ public class UrlController {
     private UrlService urlService;
 
     @PostMapping
-    public ResponseEntity<String> createShortUrl(@RequestBody UrlRequest request){
+    public ResponseEntity<String> createShortUrl(@RequestBody UrlRequest request, @RequestParam String username){
         try{
-            String shortUrl = urlService.generateShortUrl(request);
+            String shortUrl = urlService.generateShortUrl(request, username);
             return ResponseEntity.ok(shortUrl);
         } catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -25,10 +26,15 @@ public class UrlController {
     }
 
     @GetMapping("/{shortUrl}")
-    public ResponseEntity<String> redirectToLongUrl(@PathVariable String shortUrl){
-        String longUrl = urlService.getLongUrl(shortUrl);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create(longUrl));
-        return new ResponseEntity<>(headers, HttpStatus.FOUND); // 302 found
+    public ResponseEntity<ErrorResponse> redirectToLongUrl(@PathVariable String shortUrl){
+        try {
+            String longUrl = urlService.getLongUrl(shortUrl);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(URI.create(longUrl));
+            return new ResponseEntity<>(headers, HttpStatus.FOUND); // 302 Found
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(e.getMessage())); // 400 Bad Request
+        }
+
     }
 }
