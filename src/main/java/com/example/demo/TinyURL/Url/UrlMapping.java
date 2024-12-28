@@ -14,7 +14,7 @@ public class UrlMapping {
     private Long id;
     @Column(name = "long_url", nullable = false, columnDefinition = "TEXT")
     private String longUrl;
-    @Column(name = "short_url", nullable = false, unique = true, length = 10)
+    @Column(name = "short_url", nullable = false, unique = true)
     private String shortUrl;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)

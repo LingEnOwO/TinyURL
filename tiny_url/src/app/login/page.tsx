@@ -1,41 +1,42 @@
 "use client";
 
-import React, { useState} from "react";
-import Link from "next/link"; // Use Link for navigation in the App Router
+import React, { useState } from 'react';
+import Link from "next/link";
 
-const RegistrationPage: React.FC = () => {
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+const LoginPage: React.FC = () => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
 
-    const handleRegister = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setSuccess(null);
 
         try{
-            const response = await fetch("http://localhost:8080/api/users/register", {
-                method: "POST",
-                headers: {
-                "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ username, email, password }),
-            });
+            const response = await fetch("http://localhost:8080/api/users/login", {
+             method: "POST",
+             headers: {
+               "Content-Type": "application/json",
+             },
+             body: JSON.stringify({ username, password }),
+           });
 
-            if (response.ok){
-                setSuccess("Registration successful! You can now log in.");
-                setUsername("");
-                setEmail("");
-                setPassword("");
-
-            } else {
+            if (response.ok) {
+                const message = await response.text();
+                setSuccess(message);
+                console.log("Login successful", message);
+                // Redirect to dashboard or homepage on success
+                // router.push("/dashboard");
+            } else{
                 const errorMessage = await response.text();
                 setError(errorMessage);
+                console.log("Login failed: ", errorMessage);
             }
         } catch (err){
             setError("An error occurred. Please try again later.");
+            console.error(err);
         }
     };
 
@@ -50,7 +51,7 @@ const RegistrationPage: React.FC = () => {
           }}
         >
           <form
-            onSubmit={handleRegister}
+            onSubmit={handleLogin}
             style={{
               maxWidth: "400px",
               width: "100%",
@@ -61,7 +62,7 @@ const RegistrationPage: React.FC = () => {
               boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <h1 style={{ textAlign: "center", marginBottom: "20px", color: "#333" }}>Register</h1>
+            <h1 style={{ textAlign: "center", marginBottom: "20px", color: "#333" }}>Login</h1>
             {error && (
               <div
                 style={{
@@ -101,30 +102,9 @@ const RegistrationPage: React.FC = () => {
                   marginTop: "0.5rem",
                   border: "1px solid #ccc",
                   borderRadius: "4px",
-                  color: "#333",
                   fontSize: "16px",
-                }}
-              />
-            </div>
-            <div style={{ marginBottom: "1rem" }}>
-              <label htmlFor="email" style={{ fontWeight: "bold", color: "#333" }}>
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  marginTop: "0.5rem",
-                  border: "1px solid #ccc",
-                  borderRadius: "4px",
                   color: "#333",
-                  fontSize: "16px",
+                  backgroundColor: "#fff",
                 }}
               />
             </div>
@@ -145,8 +125,9 @@ const RegistrationPage: React.FC = () => {
                   marginTop: "0.5rem",
                   border: "1px solid #ccc",
                   borderRadius: "4px",
-                  color: "#333",
                   fontSize: "16px",
+                  color: "#333",
+                  backgroundColor: "#fff",
                 }}
               />
             </div>
@@ -163,9 +144,9 @@ const RegistrationPage: React.FC = () => {
                 marginBottom: "1rem",
               }}
             >
-              Register
+              Login
             </button>
-            <Link href="/..">
+            <Link href="/register">
               <button
                 type="button"
                 style={{
@@ -179,7 +160,7 @@ const RegistrationPage: React.FC = () => {
                   width: "100%",
                 }}
               >
-                Login
+                Register
               </button>
             </Link>
           </form>
@@ -187,4 +168,5 @@ const RegistrationPage: React.FC = () => {
       );
     };
 
-    export default RegistrationPage;
+
+export default LoginPage;

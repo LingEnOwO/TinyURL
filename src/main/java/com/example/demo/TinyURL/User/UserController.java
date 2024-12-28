@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import com.example.demo.TinyURL.ErrorResponse.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/users")
@@ -27,12 +29,18 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@Valid @RequestBody LoginRequest loginRequest){
+    public ResponseEntity<Map<String, String>> loginUser(@Valid @RequestBody LoginRequest loginRequest){
         try{
             userService.authenticateUser(loginRequest);
-            return ResponseEntity.ok("Login successful");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Login successful");
+            // For frontend to fetch username
+            response.put("username", loginRequest.getUsername());
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
 
