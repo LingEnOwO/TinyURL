@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class UrlService {
@@ -23,6 +24,14 @@ public class UrlService {
         // Check if alias is already in use
         if (request.getAlias() != null && urlRepository.existsByShortUrl(request.getAlias())){
             throw new IllegalArgumentException("Alias already in use");
+        }
+
+        // Check if the long URL already exists and no alias is provided
+        if (request.getAlias() == null){
+            Optional<UrlMapping> existingMapping = urlRepository.findByLongUrl(request.getLongUrl());
+            if (existingMapping.isPresent()){
+                return existingMapping.get().getShortUrl();
+            }
         }
 
         // Generate a unique short URL if no alias is provided
@@ -51,6 +60,7 @@ public class UrlService {
     public String getLongUrl(String shortUrl) {
         // Fetch the UrlMapping for the short URL
         UrlMapping urlMapping = urlRepository.findByShortUrl(shortUrl).orElseThrow(() -> new IllegalArgumentException("Short URL not found"));
+
         //return urlRepository.findByShortUrl(shortUrl).map(UrlMapping::getLongUrl).orElseThrow(() -> new ShortUrlNotFoundException(shortUrl));
 
         // Check if the URL has expired
