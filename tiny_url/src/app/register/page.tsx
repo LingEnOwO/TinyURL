@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState} from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link"; // Use Link for navigation in the App Router
 
 const RegistrationPage: React.FC = () => {
@@ -8,12 +8,18 @@ const RegistrationPage: React.FC = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
+    const [success, setSuccess] = useState<boolean>(false);
+
+    useEffect( () => {
+            if (success) {
+                document.location.href = "/shortener";
+            }
+        }, [success]);
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        setSuccess(null);
+        setSuccess(false);
 
         try{
             const response = await fetch("http://localhost:8080/api/users/register", {
@@ -25,14 +31,13 @@ const RegistrationPage: React.FC = () => {
             });
 
             if (response.ok){
-                setSuccess("Registration successful! You can now log in.");
-                setUsername("");
-                setEmail("");
-                setPassword("");
+                const data = await response.json();
+                localStorage.setItem("username", data.username);
+                setSuccess(true);
 
             } else {
-                const errorMessage = await response.text();
-                setError(errorMessage);
+                const errorData = await response.json();
+                setError(errorData.error || "An unknown error occurred");
             }
         } catch (err){
             setError("An error occurred. Please try again later.");
@@ -165,7 +170,7 @@ const RegistrationPage: React.FC = () => {
             >
               Register
             </button>
-            <Link href="/..">
+            <Link href="/login">
               <button
                 type="button"
                 style={{

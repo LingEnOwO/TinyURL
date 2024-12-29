@@ -19,12 +19,18 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser (@Valid @RequestBody UserRequest userRequest){
+    public ResponseEntity<Map<String, String>> registerUser (@Valid @RequestBody RegisterRequest userRequest){
         try{
             userService.registerUser(userRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Login successful");
+            // For frontend to fetch username
+            response.put("username", userRequest.getUsername());
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
 

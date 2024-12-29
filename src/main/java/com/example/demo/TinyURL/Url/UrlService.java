@@ -65,7 +65,9 @@ public class UrlService {
         return hash;
     }
 
-    public String getLongUrl(String shortUrl) {
+    public String getLongUrl(String alias) {
+        // Extract alias from the full short URL
+        String shortUrl = baseUrl + alias;
         // Fetch the UrlMapping for the short URL
         UrlMapping urlMapping = urlRepository.findByShortUrl(shortUrl).orElseThrow(() -> new IllegalArgumentException("Short URL not found"));
 

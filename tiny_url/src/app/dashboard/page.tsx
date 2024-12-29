@@ -51,59 +51,192 @@ const DashboardPage: React.FC = () => {
    return (
        <div
          style={{
+           backgroundColor: "#fff", // Set the outer background to white
+           minHeight: "100vh", // Ensure it covers the full viewport height
            padding: "20px",
-           maxWidth: "800px",
-           margin: "0 auto",
-           backgroundColor: "#f7f7f7",
          }}
        >
-         <h1 style={{ fontWeight: "bold", padding: "8px", color: "#333" }}>Created URLs</h1>
-         {error && <p style={{ color: "red" }}>{error}</p>}
-         {!error && urls.length === 0 && <p>No URLs found.</p>}
-         <table
+         <div
            style={{
-             width: "100%",
-             borderCollapse: "collapse",
-             marginTop: "20px",
+             padding: "20px",
+             maxWidth: "1000px", // Center content
+             margin: "0 auto",
+             backgroundColor: "#fff", // Inner container stays white
            }}
          >
-           <thead style={{fontWeight: "bold", color: "#333"}}>
-             <tr>
-               <th style={{ borderBottom: "1px solid #ccc", padding: "8px", fontWeight: "bold", color: "#333"}}>
-                 Long URL
-               </th>
-               <th style={{ borderBottom: "1px solid #ccc", padding: "8px", fontWeight: "bold", color: "#333" }}>
-                 Short URL
-               </th>
-               <th style={{ borderBottom: "1px solid #ccc", padding: "8px", fontWeight: "bold", color: "#333" }}>
-                 Created Date
-               </th>
-               <th style={{ borderBottom: "1px solid #ccc", padding: "8px", fontWeight: "bold", color: "#333" }}>
-                 Expiration Date
-               </th>
-             </tr>
-           </thead>
-           <tbody>
+           <div
+             style={{
+               display: "flex",
+               justifyContent: "space-between",
+               alignItems: "center",
+               marginBottom: "20px",
+             }}
+           >
+             <h1 style={{ fontWeight: "bold", fontSize: "2rem", color: "#333" }}>
+               Created URLs
+             </h1>
+             <button
+               onClick={() => (window.location.href = "/shortener")}
+               style={{
+                 backgroundColor: "#0070f3",
+                 color: "#fff",
+                 border: "none",
+                 borderRadius: "5px",
+                 padding: "10px 20px",
+                 fontSize: "1rem",
+                 cursor: "pointer",
+                 boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+               }}
+             >
+               Go Back to Shortener
+             </button>
+           </div>
+           {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+           {!error && urls.length === 0 && <p style={{ textAlign: "center" }}>No URLs found.</p>}
+           <div
+             style={{
+               display: "grid",
+               gridTemplateColumns: "1fr 1fr 1fr 1fr", // Four equal columns
+               gap: "10px",
+             }}
+           >
+             {/* Header Row */}
+             <div
+               style={{
+                 fontWeight: "bold",
+                 borderBottom: "2px solid #ccc",
+                 padding: "10px",
+                 backgroundColor: "#4CAF50", // Green background for header
+                 color: "#fff", // White text for contrast
+                 textAlign: "center",
+               }}
+             >
+               Long URL
+             </div>
+             <div
+               style={{
+                 fontWeight: "bold",
+                 borderBottom: "2px solid #ccc",
+                 padding: "10px",
+                 backgroundColor: "#4CAF50",
+                 color: "#fff",
+                 textAlign: "center",
+               }}
+             >
+               Short URL
+             </div>
+             <div
+               style={{
+                 fontWeight: "bold",
+                 borderBottom: "2px solid #ccc",
+                 padding: "10px",
+                 backgroundColor: "#4CAF50",
+                 color: "#fff",
+                 textAlign: "center",
+               }}
+             >
+               Created Date
+             </div>
+             <div
+               style={{
+                 fontWeight: "bold",
+                 borderBottom: "2px solid #ccc",
+                 padding: "10px",
+                 backgroundColor: "#4CAF50",
+                 color: "#fff",
+                 textAlign: "center",
+               }}
+             >
+               Expiration Date
+             </div>
+
+             {/* Data Rows */}
              {urls.map((url, index) => (
-               <tr key={index}>
-                 <td style={{ padding: "8px", color: "#333" }}>{url.longUrl}</td>
-                 <td style={{ padding: "8px" }}>
-                   <a style={{ padding: "8px", color: "#333" }}
-                     href={`http://localhost:8080/${url.shortUrl}`}
+               <React.Fragment key={index}>
+                 <div
+                   style={{
+                     padding: "10px",
+                     wordBreak: "break-word",
+                     display: "flex",
+                     alignItems: "center",
+                     justifyContent: "center",
+                     textAlign: "center",
+                   }}
+                 >
+                   <a
+                     href={url.longUrl}
                      target="_blank"
                      rel="noopener noreferrer"
+                     style={{
+                       textDecoration: "none",
+                       color: "#333",
+                     }}
+                     onMouseOver={(e) => (e.currentTarget.style.textDecoration = "underline")}
+                     onMouseOut={(e) =>
+                       (e.currentTarget.style.textDecoration = "none")
+                     }
+                   >
+                     {url.longUrl}
+                   </a>
+                 </div>
+                 <div
+                   style={{
+                     padding: "10px",
+                     wordBreak: "break-word",
+                     display: "flex",
+                     alignItems: "center",
+                     justifyContent: "center",
+                     textAlign: "center",
+                   }}
+                 >
+                   <a
+                     href={`${url.shortUrl}`}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     style={{
+                       textDecoration: "none",
+                       color: "#333",
+                     }}
+                     onMouseOver={(e) => (e.currentTarget.style.textDecoration = "underline")}
+                     onMouseOut={(e) =>
+                       (e.currentTarget.style.textDecoration = "none")
+                     }
                    >
                      {url.shortUrl}
                    </a>
-                 </td>
-                 <td style={{ padding: "8px", color: "#333" }}>{formatDateForUser(url.createdDate) || "N/A"}</td>
-                 <td style={{ padding: "8px", color: "#333" }}>{formatDateForUser(url.expirationDate) || "N/A"}</td>
-               </tr>
+                 </div>
+                 <div
+                   style={{
+                     padding: "10px",
+                     whiteSpace: "nowrap",
+                     color: "#333",
+                     display: "flex",
+                     alignItems: "center",
+                     justifyContent: "center",
+                     textAlign: "center",
+                   }}
+                 >
+                   {formatDateForUser(url.createdDate) || "N/A"}
+                 </div>
+                 <div
+                   style={{
+                     padding: "10px",
+                     whiteSpace: "nowrap",
+                     color: "#333",
+                     display: "flex",
+                     alignItems: "center",
+                     justifyContent: "center",
+                     textAlign: "center",
+                   }}
+                 >
+                   {formatDateForUser(url.expirationDate) || "N/A"}
+                 </div>
+               </React.Fragment>
              ))}
-           </tbody>
-         </table>
+           </div>
+         </div>
        </div>
      );
-};
+   };
 
    export default DashboardPage;

@@ -1,6 +1,5 @@
 package com.example.demo.TinyURL.User;
 
-import com.example.demo.TinyURL.Url.UrlMapping;
 import com.example.demo.TinyURL.Url.UrlRepository;
 import com.example.demo.TinyURL.Url.UrlResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,7 @@ public class UserService {
     private UrlRepository urlRepository;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    public void registerUser(UserRequest userRequest){
+    public void registerUser(RegisterRequest userRequest){
         // Validate username uniqueness
         if (userRepository.existsByUsername(userRequest.getUsername())){
             throw new IllegalArgumentException("Username already exists");

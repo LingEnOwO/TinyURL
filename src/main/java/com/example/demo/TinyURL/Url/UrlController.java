@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/url")
@@ -16,19 +18,23 @@ public class UrlController {
     private UrlService urlService;
 
     @PostMapping
-    public ResponseEntity<String> createShortUrl(@RequestBody UrlRequest request, @RequestParam String username){
+    public ResponseEntity<Map<String, String >> createShortUrl(@RequestBody UrlRequest request, @RequestParam String username){
         try{
             String shortUrl = urlService.generateShortUrl(request, username);
-            return ResponseEntity.ok(shortUrl);
+            Map<String, String> response = new HashMap<>();
+            response.put("shortUrl", shortUrl); // Build the response
+            return ResponseEntity.ok(response);
         } catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage()); // Send error message to frontend
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
 
-    @GetMapping("/{shortUrl}")
-    public ResponseEntity<ErrorResponse> redirectToLongUrl(@PathVariable String shortUrl){
+    @GetMapping("/{alias}")
+    public ResponseEntity<ErrorResponse> redirectToLongUrl(@PathVariable String alias){
         try {
-            String longUrl = urlService.getLongUrl(shortUrl);
+            String longUrl = urlService.getLongUrl(alias);
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(URI.create(longUrl));
             return new ResponseEntity<>(headers, HttpStatus.FOUND); // 302 Found

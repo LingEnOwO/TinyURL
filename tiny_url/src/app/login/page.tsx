@@ -1,18 +1,24 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from "next/link";
 
 const LoginPage: React.FC = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
+    const [success, setSuccess] = useState<boolean>(false);
+
+    useEffect( () => {
+        if (success) {
+            document.location.href = "/shortener";
+        }
+    }, [success]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        setSuccess(null);
+        setSuccess(false);
 
         try{
             const response = await fetch("http://localhost:8080/api/users/login", {
@@ -24,19 +30,16 @@ const LoginPage: React.FC = () => {
            });
 
             if (response.ok) {
-                const message = await response.text();
-                setSuccess(message);
-                console.log("Login successful", message);
-                // Redirect to dashboard or homepage on success
-                // router.push("/dashboard");
+                const data = await response.json();
+                // Store username
+                localStorage.setItem("username", data.username);
+                setSuccess(true);
             } else{
-                const errorMessage = await response.text();
-                setError(errorMessage);
-                console.log("Login failed: ", errorMessage);
+                const errorData = await response.json();
+                setError(errorData.error || "An unknown error occurred");
             }
         } catch (err){
             setError("An error occurred. Please try again later.");
-            console.error(err);
         }
     };
 
@@ -139,9 +142,8 @@ const LoginPage: React.FC = () => {
                 color: "#fff",
                 border: "none",
                 borderRadius: "4px",
-                fontSize: "16px",
-                cursor: "pointer",
                 marginBottom: "1rem",
+                cursor: "pointer",
               }}
             >
               Login
