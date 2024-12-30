@@ -101,6 +101,26 @@ public class UrlService {
         urlMapping.setShortUrl(newShortUrl);
         urlRepository.save(urlMapping);
     }
+
+    public void updateLongUrl(String username, String alias, String newLongUrl) {
+        // Fetch the user by username
+        User user = userRepository.findByUsername(username).orElseThrow( () -> new IllegalArgumentException("User not found"));
+        // Fetch the URL by alias and User ID
+        UrlMapping urlMapping = urlRepository.findByShortUrlAndUserId(baseUrl + alias, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
+
+        // Update the long URL
+        urlMapping.setLongUrl(newLongUrl);
+        urlRepository.save(urlMapping);
+    }
+
+    public void deleteShortUrl(String username, String alias) {
+        // Fetch the user by username
+        User user = userRepository.findByUsername(username).orElseThrow( () -> new IllegalArgumentException("User not found"));
+        // Fetch the URL by alias and user
+        UrlMapping urlMapping = urlRepository.findByShortUrlAndUserId(baseUrl+alias, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
+        // Delete the URL mapping
+        urlRepository.delete(urlMapping);
+    }
 }
 
 

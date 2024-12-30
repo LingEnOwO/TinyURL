@@ -84,6 +84,72 @@ const DashboardPage: React.FC = () => {
         }
     };
 
+    const handleUpdateLongUrl = async (shortUrl: string, newLongUrl: string) => {
+        try {
+            // Extract alias
+            const alias = shortUrl.replace("http://localhost:8080/api/url/", "");
+            const response = await fetch(
+                `http://localhost:8080/api/users/${username}/urls/${alias}/update`,
+                  {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ newLongUrl }),
+                  }
+            );
+
+            if (response.ok) {
+                setSuccess("Long URL updated successfully");
+                // Clear success message after 3 seconds
+                setTimeout(() => { setSuccess(null);}, 3000);
+                // Refresh the URLs
+                const refreshedResponse = await fetch(`http://localhost:8080/api/users/${username}/urls`);
+                if (refreshedResponse.ok) {
+                    const refreshedData: Url[] = await refreshedResponse.json();
+                    setUrls(refreshedData);
+                }
+            }
+            else {
+                const errorMessage = await response.text();
+                setError(errorMessage || "Failed to update the long URL");
+            }
+        } catch (err) {
+            console.error("Error updating long URL:", err);
+            setError("An error occurred while updating the long URL.");
+        }
+    };
+
+    const handleDeleteShortUrl = async (shortUrl: string) => {
+        try {
+            const alias = shortUrl.replace("http://localhost:8080/api/url/", ""); // Extract alias
+            const response = await fetch(
+                `http://localhost:8080/api/users/${username}/urls/${alias}`,
+                {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+
+            if (response.ok) {
+              setSuccess("Short URL deleted successfully.");
+              // Clear success message after 3 seconds
+              setTimeout(() => { setSuccess(null);}, 3000);
+              // Refresh the list of URLs
+              const refreshedResponse = await fetch(`http://localhost:8080/api/users/${username}/urls`);
+              if (refreshedResponse.ok) {
+                const refreshedData: Url[] = await refreshedResponse.json();
+                setUrls(refreshedData);
+              }
+            }
+            else {
+                const errorMessage = await response.text();
+                setError(errorMessage || "Failed to delete the short URL.");
+            }
+            } catch (err) {
+                console.error("Error deleting short URL:", err);
+                setError("An error occurred while deleting the short URL.");
+            }
+    };
+
   return (
       <div
         style={{
@@ -132,7 +198,7 @@ const DashboardPage: React.FC = () => {
             <p style={{ color: "green", textAlign: "center" }}>{success}</p>
           )}
           {!error && urls.length === 0 && (
-            <p style={{ textAlign: "center" }}>No URLs found.</p>
+            <p style={{ textAlign: "center", color: "#333" }}>No URLs Found</p>
           )}
           <div
             style={{
@@ -189,45 +255,75 @@ const DashboardPage: React.FC = () => {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      gap: "10px",
+                      gap: "15px", // Horizontal spacing between input and button
+                      marginBottom: "10px", // Vertical spacing between forms
+                      width: "100%", // Ensures both forms take equal space
                     }}
                     onSubmit={(e) => {
                       e.preventDefault();
-                      const form = e.target as any;
                       const newAlias = (e.target as any).newAlias.value;
                       handleRename(url.shortUrl, newAlias);
-                      form.newAlias.value = ""; // Clear the input field
+                      (e.target as any).newAlias.value = ""; // Clear input field
                     }}
                   >
                     <input
                       type="text"
                       name="newAlias"
                       placeholder="New Alias"
-                      style={{
-                        marginRight: "10px",
-                        padding: "5px",
-                        border: "1px solid #ccc",
-                        borderRadius: "4px",
-                        textAlign: "center",
-                        color: "#333",
-                        marginTop: "15px",
-                      }}
+                      style={inputStyle}
                     />
                     <button
                       type="submit"
-                      style={{
-                        backgroundColor: "#4CAF50",
+                      style={buttonStyle}
+                    >
+                      Rename
+                    </button>
+                  </form>
+                  <form
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "15px", // Horizontal spacing between input and button
+                      marginBottom: "10px", // Vertical spacing between forms
+                      width: "100%", // Ensures both forms take equal space
+                    }}
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const newLongUrl = (e.target as any).newLongUrl.value;
+                      handleUpdateLongUrl(url.shortUrl, newLongUrl);
+                      (e.target as any).newLongUrl.value = ""; // Clear the input field
+                    }}
+                  >
+                    <input
+                      type="text"
+                      name="newLongUrl"
+                      placeholder="New Long URL"
+                      style={inputStyle}
+                    />
+                    <button
+                      type="submit"
+                      style={buttonStyle}
+                    >
+                      Update
+                    </button>
+                  </form>
+                  <button
+                    style={{
+                        ...buttonStyle,
+                        backgroundColor: "#FF4C4C",
                         color: "#fff",
                         border: "none",
                         borderRadius: "4px",
                         padding: "5px 10px",
                         cursor: "pointer",
-                        marginTop: "15px",
-                      }}
-                    >
-                      Rename
-                    </button>
-                  </form>
+                        marginTop: "10px",
+                    }}
+                        onClick={() => handleDeleteShortUrl(url.shortUrl)}
+                      >
+                        Delete
+                      </button>
+
                 </div>
               </React.Fragment>
             ))}
@@ -255,5 +351,27 @@ const DashboardPage: React.FC = () => {
     textAlign: "center",
     color: "#333",
   };
+
+    const inputStyle = {
+        padding: "10px", // Adequate padding for placeholder text
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        textAlign: "center",
+        color: "#333",
+        width: "300px", // Fixed width to ensure consistency
+        height: "40px", // Fixed height for uniform size
+        margin: "5px 0", // Vertical margin for spacing between grids
+    };
+
+    const buttonStyle = {
+        backgroundColor: "#4CAF50",
+        color: "#fff",
+        border: "none",
+        borderRadius: "4px",
+        padding: "10px 20px",
+        cursor: "pointer",
+        height: "40px", // Match height with inputs
+        marginTop: "10px", // Vertical spacing between grids and buttons
+    };
 
   export default DashboardPage;

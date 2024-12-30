@@ -1,9 +1,11 @@
 package com.example.demo.TinyURL.User;
 
+import com.example.demo.TinyURL.DTO.UpdateLongUrlRequest;
 import com.example.demo.TinyURL.SuccessResponse.SuccessResponse;
 import com.example.demo.TinyURL.Url.UrlResponse;
 import com.example.demo.TinyURL.Url.UrlService;
 import jakarta.validation.Valid;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,7 +66,7 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{username}/urls/{oldAlias}")
+    @PutMapping("/{username}/urls/{oldAlias}") // Rename shortURL
     public ResponseEntity<?> renameShortUrl(@PathVariable String username, @PathVariable String oldAlias, @RequestParam String newAlias){
         try{
             urlService.renameShortUrl(username, oldAlias, newAlias);
@@ -74,4 +76,23 @@ public class UserController {
         }
     }
 
+    @PutMapping("/{username}/urls/{alias}/update") // Direct the short URL to a new long URL
+    public ResponseEntity<?> updateLongUrl(@PathVariable String username, @PathVariable String alias, @RequestBody UpdateLongUrlRequest request){
+        try {
+            urlService.updateLongUrl(username, alias, request.getNewLongUrl());
+            return ResponseEntity.ok(new SuccessResponse("Long URL updated successfully"));
+        } catch (IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{username}/urls/{alias}")
+    public ResponseEntity<?> deleteShortUrl(@PathVariable String username, @PathVariable String alias) {
+        try {
+            urlService.deleteShortUrl(username, alias);
+            return ResponseEntity.ok(new SuccessResponse("Short URL deleted successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(e.getMessage()));
+        }
+    }
 }

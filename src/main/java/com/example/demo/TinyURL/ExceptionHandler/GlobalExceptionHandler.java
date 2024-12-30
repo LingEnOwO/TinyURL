@@ -1,6 +1,5 @@
 package com.example.demo.TinyURL.ExceptionHandler;
 
-import com.example.demo.TinyURL.Url.ShortUrlNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
