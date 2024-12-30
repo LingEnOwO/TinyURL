@@ -2,13 +2,11 @@ package com.example.demo.TinyURL.Url;
 
 import com.example.demo.TinyURL.User.User;
 import com.example.demo.TinyURL.User.UserRepository;
-import jakarta.validation.Valid;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -83,6 +81,25 @@ public class UrlService {
         urlRepository.save(urlMapping);
 
         return urlMapping.getLongUrl();
+    }
+
+    public void renameShortUrl(String username, String oldAlias, String newAlias) {
+        // Fetch user by username
+        User user = userRepository.findByUsername(username).orElseThrow( () -> new IllegalArgumentException("User not found"));
+
+        // Fetch the URL by old alias and user ID
+        String shortUrl = baseUrl + oldAlias;
+        UrlMapping urlMapping = urlRepository.findByShortUrlAndUserId(shortUrl, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
+
+        // Check if the new alias is already use
+        String newShortUrl = baseUrl + newAlias;
+        if (urlRepository.existsByShortUrl(newShortUrl)) {
+            throw new IllegalArgumentException("Alias already in use");
+        }
+
+        // Update the shortURL
+        urlMapping.setShortUrl(newShortUrl);
+        urlRepository.save(urlMapping);
     }
 }
 

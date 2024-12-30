@@ -1,14 +1,14 @@
-package com.example.demo.TinyURL.ErrorResponse;
+package com.example.demo.TinyURL.SuccessResponse;
 
 import java.time.LocalDateTime;
 
-public class ErrorResponse {
+public class SuccessResponse {
     private final String message;
     private final String timestamp;
 
-    public ErrorResponse(String message){
+    public SuccessResponse(String message) {
         this.message = message;
-        this.timestamp = LocalDateTime.now().toString();
+        this.timestamp = LocalDateTime.now().toString();;
     }
 
     public String getMessage() {

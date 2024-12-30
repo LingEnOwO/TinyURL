@@ -173,7 +173,7 @@ const ShortenerPage: React.FC = () => {
                   cursor: "pointer",
                 }}
                 >
-                See your Created URLs
+                My URLs
           </button>
           {error && (
             <div

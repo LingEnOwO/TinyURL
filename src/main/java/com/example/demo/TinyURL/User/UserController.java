@@ -1,6 +1,8 @@
 package com.example.demo.TinyURL.User;
 
+import com.example.demo.TinyURL.SuccessResponse.SuccessResponse;
 import com.example.demo.TinyURL.Url.UrlResponse;
+import com.example.demo.TinyURL.Url.UrlService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,15 +19,17 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private UrlService urlService;
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> registerUser (@Valid @RequestBody RegisterRequest userRequest){
+    public ResponseEntity<Map<String, String>> registerUser (@Valid @RequestBody RegisterRequest registerRequest){
         try{
-            userService.registerUser(userRequest);
+            userService.registerUser(registerRequest);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Login successful");
             // For frontend to fetch username
-            response.put("username", userRequest.getUsername());
+            response.put("username", registerRequest.getUsername());
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e){
             Map<String, String> errorResponse = new HashMap<>();
@@ -50,7 +54,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{username}/urls")
+    @GetMapping("/{username}/urls") // Get user's URLs
     public ResponseEntity<?> getUserUrls(@PathVariable String username){
         try {
             List<UrlResponse> urls = userService.getUserUrls(username);
@@ -59,4 +63,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(e.getMessage()));
         }
     }
+
+    @PutMapping("/{username}/urls/{oldAlias}")
+    public ResponseEntity<?> renameShortUrl(@PathVariable String username, @PathVariable String oldAlias, @RequestParam String newAlias){
+        try{
+            urlService.renameShortUrl(username, oldAlias, newAlias);
+            return ResponseEntity.ok(new SuccessResponse("Short URL renamed successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
 }

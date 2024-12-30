@@ -53,7 +53,7 @@ public class UserService {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // Fetch URLs and map them to UrlResponse DTOs
-        return urlRepository.findByUserId(user.getId()).stream()
+        return urlRepository.findByUserIdOrderByCreatedDate(user.getId()).stream()
                 .map(url ->{
                     UrlResponse response = new UrlResponse();
                     response.setLongUrl(url.getLongUrl());
