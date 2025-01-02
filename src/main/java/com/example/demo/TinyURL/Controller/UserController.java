@@ -9,11 +9,13 @@ import com.example.demo.TinyURL.Service.UrlService;
 import com.example.demo.TinyURL.Service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.example.demo.TinyURL.ErrorResponse.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,11 +90,31 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/{username}/urls/{alias}")
+    @DeleteMapping("/{username}/urls/{alias}") // Delete a short URL
     public ResponseEntity<?> deleteShortUrl(@PathVariable String username, @PathVariable String alias) {
         try {
             urlService.deleteShortUrl(username, alias);
             return ResponseEntity.ok(new SuccessResponse("Short URL deleted successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{username}/urls/{alias}/clicks") // Get the total count of the short URL got clicked
+    public ResponseEntity<?> getClickCount(@PathVariable String username, @PathVariable String alias) {
+        try {
+            int clickCount = urlService.getClickCount(username, alias);
+            return ResponseEntity.ok(new SuccessResponse("Click count: " + clickCount));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{username}/urls/{alias}/last-clicked") // Get the last-clicked time of the short URL
+    public ResponseEntity<?> getLastClicked(@PathVariable String username, @PathVariable String alias) {
+        try {
+            LocalDateTime lastClicked = urlService.getLastClicked(username, alias);
+            return ResponseEntity.ok(new SuccessResponse("Last clicked time: " + lastClicked));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(e.getMessage()));
         }

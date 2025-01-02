@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, element } from "react";
 import { format } from "date-fns";
 
 interface Url {
@@ -10,15 +10,30 @@ interface Url {
     expirationDate?: string;
 }
 
-const formatDateForUser = (isoString: string): string => {
-    return format(new Date(isoString), "dd MMM yyyy, HH:mm");
+const formatDateForUser = (isoString: string | null | undefined): string => {
+    if (!isoString || isNaN(new Date(isoString).getTime())) {
+        return "Never"; // Fallback for invalid or null/undefined values
+    }
+    try {
+        return format(new Date(isoString), "dd MMM yyyy, HH:mm");
+    } catch (error) {
+        console.error("Invalid date format:", isoString);
+        return "Invalid Date"; // Fallback for unexpected errors
+    }
 };
+
 
 const DashboardPage: React.FC = () => {
     const [urls, setUrls] = useState<Url[]>([]);
     const [username, setUsername] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [hoverData, setHoverData] = useState<{
+      shortUrl: string;
+      clickCount: number;
+      lastClicked: string | null;
+    } | null>(null);
+    const [gridPosition, setGridPosition] = useState<"above" | "below">("below");
 
     useEffect(() => {
         const fetchUrls = async () => {
@@ -148,6 +163,38 @@ const DashboardPage: React.FC = () => {
                 console.error("Error deleting short URL:", err);
                 setError("An error occurred while deleting the short URL.");
             }
+    };
+
+    const handleHoverInfo = async (shortUrl: string) => {
+        const alias = shortUrl.replace("http://localhost:8080/api/url/", ""); // Extract alias
+        try {
+            // Fetch click count  and last clicked data simultaneously
+            const [clickCountResponse, lastClickedResponse] = await Promise.all([
+                fetch(`http://localhost:8080/api/users/${username}/urls/${alias}/clicks`),
+                fetch(`http://localhost:8080/api/users/${username}/urls/${alias}/last-clicked`),
+            ]);
+
+            const clickCountData = await clickCountResponse.json();
+            const lastClickedData = await lastClickedResponse.json();
+
+            // For debug
+            console.log("Setting hover data:", {
+                shortUrl,
+                clickCount: clickCountData.message,
+                lastClicked: lastClickedData.message,
+            });
+
+            const formattedLastClicked = formatDateForUser(lastClickedData.message.replace("Last clicked time: ", ""))
+
+            setHoverData({
+               shortUrl,
+               clickCount: clickCountData.message.replace("Click count: ",""),
+               lastClicked: formattedLastClicked,
+            });
+        } catch (err) {
+            console.error("Error fetching info data:", err);
+            setHoverData(null); // clear hover data on error
+        }
     };
 
   return (
@@ -323,6 +370,36 @@ const DashboardPage: React.FC = () => {
                       >
                         Delete
                       </button>
+                      <span
+                      style={{
+                        marginLeft: "10px",
+                        color: "#0070f3",
+                        cursor: "pointer",
+                        textDecoration: "underline",
+                      }}
+                      onMouseEnter={() => handleHoverInfo(url.shortUrl)}
+                      onMouseLeave={() => setHoverData(null)}
+                    >
+                      Info
+                    </span>
+                    {hoverData && hoverData.shortUrl === url.shortUrl && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          backgroundColor: "#fff",
+                          border: "1px solid #ccc",
+                          borderRadius: "5px",
+                          padding: "10px",
+                          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+                          marginTop: "5px", // Add some spacing between "Info" and the grid
+                          zIndex: 10,
+                          color: "#333",
+                        }}
+                      >
+                        <p>Click Count: {hoverData?.clickCount ?? "Loading..."}</p>
+                        <p>Last Clicked: {hoverData?.lastClicked ?? "Loading..."}</p>
+                      </div>
+                    )}
 
                 </div>
               </React.Fragment>

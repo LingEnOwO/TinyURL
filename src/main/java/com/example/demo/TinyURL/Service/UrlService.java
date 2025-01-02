@@ -80,6 +80,8 @@ public class UrlService {
         }
 
         // Update expirationDate to 30 days from now
+        url.setClickCount(url.getClickCount() + 1);
+        url.setLastClicked(LocalDateTime.now());
         url.setExpirationDate(LocalDateTime.now().plusDays(expirationDays));
         urlRepository.save(url);
 
@@ -120,9 +122,21 @@ public class UrlService {
         // Fetch the user by username
         User user = userRepository.findByUsername(username).orElseThrow( () -> new IllegalArgumentException("User not found"));
         // Fetch the URL by alias and user
-        Url url = urlRepository.findByShortUrlAndUserId(baseUrl+alias, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
+        Url url = urlRepository.findByShortUrlAndUserId(baseUrl + alias, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
         // Delete the URL mapping
         urlRepository.delete(url);
+    }
+
+    public int getClickCount(String username, String alias) {
+        User user = userRepository.findByUsername(username).orElseThrow( () -> new IllegalArgumentException("User not found"));
+        Url url = urlRepository.findByShortUrlAndUserId(baseUrl + alias, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
+        return url.getClickCount();
+    }
+
+    public LocalDateTime getLastClicked(String username, String alias) {
+        User user = userRepository.findByUsername(username).orElseThrow( () -> new IllegalArgumentException("User not found"));
+        Url url = urlRepository.findByShortUrlAndUserId(baseUrl + alias, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
+        return url.getLastClicked();
     }
 }
 

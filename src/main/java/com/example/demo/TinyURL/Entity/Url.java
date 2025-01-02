@@ -23,6 +23,11 @@ public class Url {
     @Column(name = "expiration_date", nullable = true)
     private LocalDateTime expirationDate;
 
+    @Column(name = "click_count")
+    private Integer clickCount = 0;// Initialize to 0
+    @Column(name = "last_time_click")
+    private LocalDateTime lastClicked;
+
     @PrePersist
     protected void onCreate(){
         this.createdDate = LocalDateTime.now();
@@ -71,4 +76,12 @@ public class Url {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public LocalDateTime getLastClicked() {return lastClicked;}
+
+    public void setLastClicked(LocalDateTime lastClicked) {this.lastClicked = lastClicked;}
+
+    public Integer getClickCount() {return clickCount;}
+
+    public void setClickCount(Integer clickCount) {this.clickCount = clickCount;}
 }
