@@ -1,6 +1,8 @@
-package com.example.demo.TinyURL.Url;
+package com.example.demo.TinyURL.Controller;
 
+import com.example.demo.TinyURL.DTO.UrlRequest;
 import com.example.demo.TinyURL.ErrorResponse.ErrorResponse;
+import com.example.demo.TinyURL.Service.UrlService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

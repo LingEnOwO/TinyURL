@@ -1,7 +1,10 @@
-package com.example.demo.TinyURL.Url;
+package com.example.demo.TinyURL.Service;
 
-import com.example.demo.TinyURL.User.User;
-import com.example.demo.TinyURL.User.UserRepository;
+import com.example.demo.TinyURL.DTO.UrlRequest;
+import com.example.demo.TinyURL.Entity.Url;
+import com.example.demo.TinyURL.Repository.UrlRepository;
+import com.example.demo.TinyURL.Entity.User;
+import com.example.demo.TinyURL.Repository.UserRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,8 +35,8 @@ public class UrlService {
         }
 
         // Check if the long URL already exists and no alias is provided
-        if (request.getAlias() == null){
-            Optional<UrlMapping> existingMapping = urlRepository.findByLongUrl(request.getLongUrl());
+        if (request.getLongUrl() != null){
+            Optional<Url> existingMapping = urlRepository.findByLongUrl(request.getLongUrl());
             if (existingMapping.isPresent()){
                 return existingMapping.get().getShortUrl();
             }
@@ -44,11 +47,11 @@ public class UrlService {
         String shortUrl = baseUrl + alias;
 
         // Save to database
-        UrlMapping mapping = new UrlMapping();
+        Url mapping = new Url();
         mapping.setLongUrl(request.getLongUrl());
         mapping.setShortUrl(shortUrl);
         mapping.setUser(user); // Associate the user
-        mapping.onCreate();
+        //mapping.onCreate();
         mapping.setExpirationDate(LocalDateTime.now().plusDays(expirationDays));
         urlRepository.save(mapping);
 
@@ -67,20 +70,20 @@ public class UrlService {
         // Extract alias from the full short URL
         String shortUrl = baseUrl + alias;
         // Fetch the UrlMapping for the short URL
-        UrlMapping urlMapping = urlRepository.findByShortUrl(shortUrl).orElseThrow(() -> new IllegalArgumentException("Short URL not found"));
+        Url url = urlRepository.findByShortUrl(shortUrl).orElseThrow(() -> new IllegalArgumentException("Short URL not found"));
 
         //return urlRepository.findByShortUrl(shortUrl).map(UrlMapping::getLongUrl).orElseThrow(() -> new ShortUrlNotFoundException(shortUrl));
 
         // Check if the URL has expired
-        if (urlMapping.getExpirationDate() != null && urlMapping.getExpirationDate().isBefore(LocalDateTime.now())){
+        if (url.getExpirationDate() != null && url.getExpirationDate().isBefore(LocalDateTime.now())){
             throw new IllegalArgumentException("Short URL has expired");
         }
 
         // Update expirationDate to 30 days from now
-        urlMapping.setExpirationDate(LocalDateTime.now().plusDays(expirationDays));
-        urlRepository.save(urlMapping);
+        url.setExpirationDate(LocalDateTime.now().plusDays(expirationDays));
+        urlRepository.save(url);
 
-        return urlMapping.getLongUrl();
+        return url.getLongUrl();
     }
 
     public void renameShortUrl(String username, String oldAlias, String newAlias) {
@@ -89,7 +92,7 @@ public class UrlService {
 
         // Fetch the URL by old alias and user ID
         String shortUrl = baseUrl + oldAlias;
-        UrlMapping urlMapping = urlRepository.findByShortUrlAndUserId(shortUrl, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
+        Url url = urlRepository.findByShortUrlAndUserId(shortUrl, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
 
         // Check if the new alias is already use
         String newShortUrl = baseUrl + newAlias;
@@ -98,28 +101,28 @@ public class UrlService {
         }
 
         // Update the shortURL
-        urlMapping.setShortUrl(newShortUrl);
-        urlRepository.save(urlMapping);
+        url.setShortUrl(newShortUrl);
+        urlRepository.save(url);
     }
 
     public void updateLongUrl(String username, String alias, String newLongUrl) {
         // Fetch the user by username
         User user = userRepository.findByUsername(username).orElseThrow( () -> new IllegalArgumentException("User not found"));
         // Fetch the URL by alias and User ID
-        UrlMapping urlMapping = urlRepository.findByShortUrlAndUserId(baseUrl + alias, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
+        Url url = urlRepository.findByShortUrlAndUserId(baseUrl + alias, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
 
         // Update the long URL
-        urlMapping.setLongUrl(newLongUrl);
-        urlRepository.save(urlMapping);
+        url.setLongUrl(newLongUrl);
+        urlRepository.save(url);
     }
 
     public void deleteShortUrl(String username, String alias) {
         // Fetch the user by username
         User user = userRepository.findByUsername(username).orElseThrow( () -> new IllegalArgumentException("User not found"));
         // Fetch the URL by alias and user
-        UrlMapping urlMapping = urlRepository.findByShortUrlAndUserId(baseUrl+alias, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
+        Url url = urlRepository.findByShortUrlAndUserId(baseUrl+alias, user.getId()).orElseThrow( () -> new IllegalArgumentException("Short URL not found"));
         // Delete the URL mapping
-        urlRepository.delete(urlMapping);
+        urlRepository.delete(url);
     }
 }
 

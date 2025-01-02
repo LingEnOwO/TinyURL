@@ -1,13 +1,12 @@
-package com.example.demo.TinyURL.Url;
+package com.example.demo.TinyURL.Entity;
 
-import com.example.demo.TinyURL.User.User;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "url_mapping")
-public class UrlMapping {
+@Table(name = "urls")
+public class Url {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

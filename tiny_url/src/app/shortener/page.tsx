@@ -39,8 +39,8 @@ const ShortenerPage: React.FC = () => {
                 setShortUrl(data.shortUrl)
             }
             else {
-                const errorMessage = await response.text();
-                console.error("Error from server:", errorText);
+                const errorMessage = await response.json();
+                console.error("Error from server:", errorMessage);
                 setError(errorMessage || "An error occurred");
             }
         } catch (err) {

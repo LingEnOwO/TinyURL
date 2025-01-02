@@ -1,4 +1,4 @@
-package com.example.demo.TinyURL.User;
+package com.example.demo.TinyURL.DTO;
 
 import jakarta.validation.constraints.NotBlank;
 

@@ -1,7 +1,11 @@
-package com.example.demo.TinyURL.User;
+package com.example.demo.TinyURL.Service;
 
-import com.example.demo.TinyURL.Url.UrlRepository;
-import com.example.demo.TinyURL.Url.UrlResponse;
+import com.example.demo.TinyURL.DTO.LoginRequest;
+import com.example.demo.TinyURL.DTO.RegisterRequest;
+import com.example.demo.TinyURL.Repository.UrlRepository;
+import com.example.demo.TinyURL.DTO.UrlResponse;
+import com.example.demo.TinyURL.Entity.User;
+import com.example.demo.TinyURL.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;

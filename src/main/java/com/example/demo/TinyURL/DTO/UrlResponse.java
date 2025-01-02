@@ -1,4 +1,4 @@
-package com.example.demo.TinyURL.Url;
+package com.example.demo.TinyURL.DTO;
 
 public class UrlResponse {
     private String longUrl;

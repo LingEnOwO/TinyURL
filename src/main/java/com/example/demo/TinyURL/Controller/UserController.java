@@ -1,11 +1,13 @@
-package com.example.demo.TinyURL.User;
+package com.example.demo.TinyURL.Controller;
 
+import com.example.demo.TinyURL.DTO.LoginRequest;
+import com.example.demo.TinyURL.DTO.RegisterRequest;
 import com.example.demo.TinyURL.DTO.UpdateLongUrlRequest;
 import com.example.demo.TinyURL.SuccessResponse.SuccessResponse;
-import com.example.demo.TinyURL.Url.UrlResponse;
-import com.example.demo.TinyURL.Url.UrlService;
+import com.example.demo.TinyURL.DTO.UrlResponse;
+import com.example.demo.TinyURL.Service.UrlService;
+import com.example.demo.TinyURL.Service.UserService;
 import jakarta.validation.Valid;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

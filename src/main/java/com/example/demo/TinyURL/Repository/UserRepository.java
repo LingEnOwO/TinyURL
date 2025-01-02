@@ -1,5 +1,6 @@
-package com.example.demo.TinyURL.User;
+package com.example.demo.TinyURL.Repository;
 
+import com.example.demo.TinyURL.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
