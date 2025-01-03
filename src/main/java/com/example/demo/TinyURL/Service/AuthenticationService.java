@@ -29,7 +29,7 @@ public class AuthenticationService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void register(RegisterRequest request) {
+    public User register(RegisterRequest request) {
         // Validate username uniqueness
         if (userRepository.existsByUsername(request.getUsername())){
             throw new IllegalArgumentException("Username already exists");
@@ -47,7 +47,7 @@ public class AuthenticationService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(hashedPassword);
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     public User login(LoginRequest request) {

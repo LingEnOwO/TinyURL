@@ -29,49 +29,12 @@ public class UserController {
     @Autowired
     private UrlService urlService;
 
-    @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> registerUser (@Valid @RequestBody RegisterRequest registerRequest){
-        try{
-            userService.registerUser(registerRequest);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Login successful");
-            // For frontend to fetch username
-            response.put("username", registerRequest.getUsername());
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e){
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-        }
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> loginUser(@Valid @RequestBody LoginRequest loginRequest){
-        try{
-            userService.authenticateUser(loginRequest);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Login successful");
-            // For frontend to fetch username
-            response.put("username", loginRequest.getUsername());
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e){
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-        }
-    }
-
-    @GetMapping("/{username}/urls") // Get user's URLs
-    public ResponseEntity<?> getUserUrls(@PathVariable String username){
+    @GetMapping("/urls") // Get user's URLs
+    public ResponseEntity<?> getUserUrls(){
         try {
             // Extract authenticated username from the token
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String authenticatedUsername = authentication.getName();
-
-            // Validate the requested username matches the token username
-            if (!authenticatedUsername.equals(username)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse("Access denied: You cannot view another user's URLs"));
-            }
+            String username = authentication.getName();
             // Fetch URLs for the authenticated user
             List<UrlResponse> urls = userService.getUserUrls(username);
             return ResponseEntity.ok(urls);
@@ -80,16 +43,12 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{username}/urls/{oldAlias}") // Rename shortURL
-    public ResponseEntity<?> renameShortUrl(@PathVariable String username, @PathVariable String oldAlias, @RequestParam String newAlias){
+    @PutMapping("/urls/{oldAlias}") // Rename shortURL
+    public ResponseEntity<?> renameShortUrl(@PathVariable String oldAlias, @RequestParam String newAlias){
         try{
             // Extract the authenticated username from the JWT
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String authenticatedUsername = authentication.getName();
-            // Validate the authenticated username matches the path parameter
-            if (!authenticatedUsername.equals(username)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse("Access denied: You can only modify your own URLs"));
-            }
+            String username = authentication.getName();
             // Rename the short URL
             urlService.renameShortUrl(username, oldAlias, newAlias);
             return ResponseEntity.ok(new SuccessResponse("Short URL renamed successfully"));
@@ -98,16 +57,13 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{username}/urls/{alias}/update") // Direct the short URL to a new long URL
-    public ResponseEntity<?> updateLongUrl(@PathVariable String username, @PathVariable String alias, @RequestBody UpdateLongUrlRequest request){
+    @PutMapping("/urls/{alias}/update") // Direct the short URL to a new long URL
+    public ResponseEntity<?> updateLongUrl(@PathVariable String alias, @RequestBody UpdateLongUrlRequest request){
         try {
             // Extract the authenticated username from the JWT
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String authenticatedUsername = authentication.getName();
-            // Validate the authenticated username matches the path parameter
-            if (!authenticatedUsername.equals(username)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse("Access denied: You can only modify your own URLs"));
-            }
+            String username = authentication.getName();
+
             urlService.updateLongUrl(username, alias, request.getNewLongUrl());
             return ResponseEntity.ok(new SuccessResponse("Long URL updated successfully"));
         } catch (IllegalArgumentException e){
@@ -115,16 +71,13 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/{username}/urls/{alias}") // Delete a short URL
-    public ResponseEntity<?> deleteShortUrl(@PathVariable String username, @PathVariable String alias) {
+    @DeleteMapping("/urls/{alias}") // Delete a short URL
+    public ResponseEntity<?> deleteShortUrl(@PathVariable String alias) {
         try {
             // Extract the authenticated username from the JWT
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String authenticatedUsername = authentication.getName();
-            // Validate the authenticated username matches the path parameter
-            if (!authenticatedUsername.equals(username)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse("Access denied: You can only delete your own URLs"));
-            }
+            String username = authentication.getName();
+
             urlService.deleteShortUrl(username, alias);
             return ResponseEntity.ok(new SuccessResponse("Short URL deleted successfully"));
         } catch (IllegalArgumentException e) {
@@ -132,16 +85,13 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{username}/urls/{alias}/clicks") // Get the total count of the short URL got clicked
-    public ResponseEntity<?> getClickCount(@PathVariable String username, @PathVariable String alias) {
+    @GetMapping("/urls/{alias}/clicks") // Get the total count of the short URL got clicked
+    public ResponseEntity<?> getClickCount(@PathVariable String alias) {
         try {
             // Extract the authenticated username from the JWT
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String authenticatedUsername = authentication.getName();
-            // Validate the authenticated username matches the path parameter
-            if (!authenticatedUsername.equals(username)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse("Access denied: You can only view your own info"));
-            }
+            String username = authentication.getName();
+
             int clickCount = urlService.getClickCount(username, alias);
             return ResponseEntity.ok(new SuccessResponse("Click count: " + clickCount));
         } catch (IllegalArgumentException e) {
@@ -149,16 +99,13 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{username}/urls/{alias}/last-clicked") // Get the last-clicked time of the short URL
-    public ResponseEntity<?> getLastClicked(@PathVariable String username, @PathVariable String alias) {
+    @GetMapping("/urls/{alias}/last-clicked") // Get the last-clicked time of the short URL
+    public ResponseEntity<?> getLastClicked(@PathVariable String alias) {
         try {
             // Extract the authenticated username from the JWT
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String authenticatedUsername = authentication.getName();
-            // Validate the authenticated username matches the path parameter
-            if (!authenticatedUsername.equals(username)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new ErrorResponse("Access denied: You can only view your own info"));
-            }
+            String username = authentication.getName();
+
             LocalDateTime lastClicked = urlService.getLastClicked(username, alias);
             return ResponseEntity.ok(new SuccessResponse("Last clicked time: " + lastClicked));
         } catch (IllegalArgumentException e) {

@@ -25,7 +25,6 @@ const formatDateForUser = (isoString: string | null | undefined): string => {
 
 const DashboardPage: React.FC = () => {
     const [urls, setUrls] = useState<Url[]>([]);
-    const [username, setUsername] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [hoverData, setHoverData] = useState<{
@@ -33,19 +32,21 @@ const DashboardPage: React.FC = () => {
       clickCount: number;
       lastClicked: string | null;
     } | null>(null);
-    const [gridPosition, setGridPosition] = useState<"above" | "below">("below");
 
     useEffect(() => {
         const fetchUrls = async () => {
-            const username = localStorage.getItem("username");
-            if (!username) {
-                setError("No user logged in");
+            const token = localStorage.getItem("token");
+            if (!token) {
+                setError("You are not logged in. Redirecting to login...");
+                setTimeout(() => (window.location.href = "/login"), 2000);
                 return;
             }
-            setUsername(username);
 
             try {
-                const response = await fetch(`http://localhost:8080/api/users/${username}/urls`);
+                const response = await fetch(`http://localhost:8080/api/users/urls`,{
+                    method: "GET",
+                    headers: { "Authorization": `Bearer ${token}` },
+                });
                 if (response.ok) {
                     const data: Url[] = await response.json();
                     setUrls(data);
@@ -57,25 +58,27 @@ const DashboardPage: React.FC = () => {
             } catch (err) {
                 setError("An error occurred. Please try again later.");
             }
-        };
+    };
         fetchUrls();
     }, []);
 
     const handleRename = async (shortUrl: string, newAlias: string) => {
-        if (!username) {
-            setError("No user logged in");
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setError("You are not logged in.");
             return;
         }
 
         try {
             // Extract alias from the short URL
-            const baseUrl = "http://localhost:8080/api/url/";
-            const oldAlias = shortUrl.startsWith(baseUrl) ? shortUrl.substring(baseUrl.length) : shortUrl;
+            const oldAlias = shortUrl.replace("http://localhost:8080/api/url/", "");
             const response = await fetch(
-                `http://localhost:8080/api/users/${username}/urls/${oldAlias}?newAlias=${newAlias}`,
+                `http://localhost:8080/api/users/urls/${oldAlias}?newAlias=${newAlias}`,
                 {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json",
+                                "Authorization": `Bearer ${token}`,
+                    },
                 }
             );
 
@@ -88,26 +91,41 @@ const DashboardPage: React.FC = () => {
                 // Clear success message after 3 seconds
                 setTimeout(() => { setSuccess(null);}, 3000);
                 // Refresh the URLs
-                const refreshedResponse = await fetch(`http://localhost:8080/api/users/${username}/urls`);
+                const refreshedResponse = await fetch(`http://localhost:8080/api/users/urls`,{
+                    headers: { "Authorization": `Bearer ${token}` },
+                });
                 if (refreshedResponse.ok) {
                     const refreshedData: Url[] = await refreshedResponse.json();
                     setUrls(refreshedData);
                 }
+                else {
+                    const errorMessage = await response.text();
+                    setError(errorMessage || "Failed to rename the URL.");
+                }
             }
         } catch (err) {
+            console.error("Error renaming URL:", err);
             setError("An error occurred. Please try again later.");
         }
     };
 
     const handleUpdateLongUrl = async (shortUrl: string, newLongUrl: string) => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setError("You are not logged in.");
+            return;
+        }
         try {
             // Extract alias
             const alias = shortUrl.replace("http://localhost:8080/api/url/", "");
             const response = await fetch(
-                `http://localhost:8080/api/users/${username}/urls/${alias}/update`,
+                `http://localhost:8080/api/users/urls/${alias}/update`,
                   {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
                     body: JSON.stringify({ newLongUrl }),
                   }
             );
@@ -117,7 +135,9 @@ const DashboardPage: React.FC = () => {
                 // Clear success message after 3 seconds
                 setTimeout(() => { setSuccess(null);}, 3000);
                 // Refresh the URLs
-                const refreshedResponse = await fetch(`http://localhost:8080/api/users/${username}/urls`);
+                const refreshedResponse = await fetch(`http://localhost:8080/api/users/urls`, {
+                    headers: { "Authorization": `Bearer ${token}` },
+                });
                 if (refreshedResponse.ok) {
                     const refreshedData: Url[] = await refreshedResponse.json();
                     setUrls(refreshedData);
@@ -134,13 +154,20 @@ const DashboardPage: React.FC = () => {
     };
 
     const handleDeleteShortUrl = async (shortUrl: string) => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setError("You are not logged in.");
+            return;
+        }
         try {
             const alias = shortUrl.replace("http://localhost:8080/api/url/", ""); // Extract alias
             const response = await fetch(
-                `http://localhost:8080/api/users/${username}/urls/${alias}`,
+                `http://localhost:8080/api/users/urls/${alias}`,
                 {
                     method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json",
+                               "Authorization": `Bearer ${token}`,
+                    },
                 }
             );
 
@@ -149,7 +176,9 @@ const DashboardPage: React.FC = () => {
               // Clear success message after 3 seconds
               setTimeout(() => { setSuccess(null);}, 3000);
               // Refresh the list of URLs
-              const refreshedResponse = await fetch(`http://localhost:8080/api/users/${username}/urls`);
+              const refreshedResponse = await fetch(`http://localhost:8080/api/users/urls`, {
+                  headers: { "Authorization": `Bearer ${token}` },
+              });
               if (refreshedResponse.ok) {
                 const refreshedData: Url[] = await refreshedResponse.json();
                 setUrls(refreshedData);
@@ -166,12 +195,27 @@ const DashboardPage: React.FC = () => {
     };
 
     const handleHoverInfo = async (shortUrl: string) => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setError("You are not logged in.");
+            return;
+        }
         const alias = shortUrl.replace("http://localhost:8080/api/url/", ""); // Extract alias
         try {
             // Fetch click count  and last clicked data simultaneously
             const [clickCountResponse, lastClickedResponse] = await Promise.all([
-                fetch(`http://localhost:8080/api/users/${username}/urls/${alias}/clicks`),
-                fetch(`http://localhost:8080/api/users/${username}/urls/${alias}/last-clicked`),
+                fetch(`http://localhost:8080/api/users/urls/${alias}/clicks`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json",
+                               "Authorization": `Bearer ${token}`,
+                    },
+                }),
+                fetch(`http://localhost:8080/api/users/urls/${alias}/last-clicked`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json",
+                               "Authorization": `Bearer ${token}`,
+                    },
+                }),
             ]);
 
             const clickCountData = await clickCountResponse.json();

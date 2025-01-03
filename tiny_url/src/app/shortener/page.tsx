@@ -3,18 +3,18 @@
 import React, {useState, useEffect} from "react";
 
 const ShortenerPage: React.FC = () => {
-    const [username, setUsername] = useState<string | null>(null);
     const [longUrl, setLongUrl] = useState("");
     const [alias, setAlias] = useState("");
     const [shortUrl, setShortUrl] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const username = localStorage.getItem("username");
-        if (username) {
-          setUsername(username); // Retrieve the username
-        } else {
-          setError("User is not logged in. Please log in to shorten URLs.");
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setError("You are not logged in. Redirecting to login...");
+            setTimeout(() => {
+                window.location.href = "/login";
+            }, 2000);
         }
       }, []);
 
@@ -23,11 +23,19 @@ const ShortenerPage: React.FC = () => {
         setError(null);
         setShortUrl(null);
 
+        const token = localStorage.getItem("token");
+        //console.log("Token:", token);
+
+        if (!token) {
+            setError("Authentication error. Please log in.");
+            return;
+        }
+
         try {
-            // Remember to use `` instead of "" due to ${username}
-            const response = await fetch(`http://localhost:8080/api/url?username=${username}`, {
+            const response = await fetch("http://localhost:8080/api/url", {
                 method: "POST",
                 headers: {
+                  "Authorization": `Bearer ${token}`,
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ longUrl, alias: alias || undefined }),
@@ -35,13 +43,26 @@ const ShortenerPage: React.FC = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log("Response Data:", data);
-                setShortUrl(data.shortUrl)
+                if (data && data.shortUrl) {
+                    setShortUrl(data.shortUrl);
+                }
+                else {
+                    setError("Unexpected response from the server. Please try again.");
+                }
             }
             else {
-                const errorMessage = await response.json();
-                console.error("Error from server:", errorMessage);
-                setError(errorMessage || "An error occurred");
+                const text = await response.text(); // Read response as plain text
+                let errorMessage = "An error occurred";
+                try {
+                    const errorData = JSON.parse(text); // Try to parse as JSON
+                    if (errorData && errorData.error) {
+                        errorMessage = errorData.error; // Use server-provided error message
+                    }
+                } catch {
+                    console.error("Error parsing server response as JSON:", text);
+                }
+                setError(errorMessage);
+                setTimeout(() => { setError(null);}, 3000);
             }
         } catch (err) {
             console.error("Network error:", err); // Log network errors

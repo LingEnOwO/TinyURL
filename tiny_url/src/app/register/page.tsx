@@ -22,7 +22,7 @@ const RegistrationPage: React.FC = () => {
         setSuccess(false);
 
         try{
-            const response = await fetch("http://localhost:8080/api/users/register", {
+            const response = await fetch("http://localhost:8080/auth/register", {
                 method: "POST",
                 headers: {
                 "Content-Type": "application/json",
@@ -32,9 +32,13 @@ const RegistrationPage: React.FC = () => {
 
             if (response.ok){
                 const data = await response.json();
-                localStorage.setItem("username", data.username);
-                setSuccess(true);
-
+                if (data.token) {
+                    localStorage.setItem("token", data.token);
+                    setSuccess(true);
+                }
+                else {
+                    setError("Registration successful, but authentication token is missing. Please log in.");
+                }
             } else {
                 const errorData = await response.json();
                 setError(errorData.error || "An unknown error occurred");

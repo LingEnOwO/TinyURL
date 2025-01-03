@@ -17,13 +17,15 @@ const LoginPage: React.FC = () => {
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        //console.log("Login button clicked");
         setError(null);
         setSuccess(false);
 
         try{
-            const response = await fetch("http://localhost:8080/api/users/login", {
+            const response = await fetch("http://localhost:8080/auth/login", {
              method: "POST",
              headers: {
+               //"Authorization": `Bearer ${token}`,
                "Content-Type": "application/json",
              },
              body: JSON.stringify({ username, password }),
@@ -32,7 +34,7 @@ const LoginPage: React.FC = () => {
             if (response.ok) {
                 const data = await response.json();
                 // Store username
-                localStorage.setItem("username", data.username);
+                localStorage.setItem("token", data.token);
                 setSuccess(true);
             } else{
                 const errorData = await response.json();
