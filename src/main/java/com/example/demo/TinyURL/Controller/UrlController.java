@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -20,11 +22,18 @@ public class UrlController {
     private UrlService urlService;
 
     @PostMapping
-    public ResponseEntity<Map<String, String >> createShortUrl(@RequestBody UrlRequest request, @RequestParam String username){
+    public ResponseEntity<Map<String, String >> createShortUrl(@RequestBody UrlRequest request){
         try{
-            String shortUrl = urlService.generateShortUrl(request, username);
+            // Extract the authenticated username from the JWT
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String authenticatedUsername = authentication.getName();
+
+            // Generate the short URL using the authenticated username
+            String shortUrl = urlService.generateShortUrl(request, authenticatedUsername);
+
+            // Build the response
             Map<String, String> response = new HashMap<>();
-            response.put("shortUrl", shortUrl); // Build the response
+            response.put("shortUrl", shortUrl);
             return ResponseEntity.ok(response);
         } catch (Exception e){
             Map<String, String> errorResponse = new HashMap<>();

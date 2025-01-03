@@ -46,15 +46,21 @@ public class UrlService {
         String alias = (request.getAlias() != null) ? request.getAlias() : generateUniqueHash();
         String shortUrl = baseUrl + alias;
 
-        // Save to database
-        Url mapping = new Url();
-        mapping.setLongUrl(request.getLongUrl());
-        mapping.setShortUrl(shortUrl);
-        mapping.setUser(user); // Associate the user
-        //mapping.onCreate();
-        mapping.setExpirationDate(LocalDateTime.now().plusDays(expirationDays));
-        urlRepository.save(mapping);
-
+        try {
+            // Save to database
+            Url mapping = new Url();
+            mapping.setLongUrl(request.getLongUrl());
+            mapping.setShortUrl(shortUrl);
+            mapping.setUser(user); // Associate the user
+            //mapping.onCreate();
+            mapping.setExpirationDate(LocalDateTime.now().plusDays(expirationDays));
+            urlRepository.save(mapping);
+        } catch (Exception e){
+            if (e.getMessage() != null && e.getMessage().contains("urls_short_url_key")) {
+                throw new IllegalArgumentException("Alias already in use");
+            }
+            throw new RuntimeException("An unexpected error occurred");
+        }
         return shortUrl;
     }
 
