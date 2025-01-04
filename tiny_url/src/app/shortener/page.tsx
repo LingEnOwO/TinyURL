@@ -62,7 +62,7 @@ const ShortenerPage: React.FC = () => {
                     console.error("Error parsing server response as JSON:", text);
                 }
                 setError(errorMessage);
-                setTimeout(() => { setError(null);}, 3000);
+
             }
         } catch (err) {
             console.error("Network error:", err); // Log network errors
@@ -197,20 +197,37 @@ const ShortenerPage: React.FC = () => {
                 My URLs
           </button>
           {error && (
-            <div
-              style={{
-                marginTop: "1.5rem",
-                padding: "1rem",
-                backgroundColor: "#ffe6e6",
-                border: "1px solid #ff4d4f",
-                borderRadius: "4px",
-                color: "#ff4d4f",
-                fontSize: "16px",
-              }}
-            >
-              {error}
-            </div>
+              <div
+                style={{
+                  position: "relative",
+                  marginTop: "1.5rem",
+                  padding: "1rem",
+                  backgroundColor: "#ffe6e6",
+                  border: "1px solid #ff4d4f",
+                  borderRadius: "4px",
+                  color: "#ff4d4f",
+                  fontSize: "16px",
+                }}
+              >
+                {error}
+                <button
+                  style={{
+                    position: "absolute",
+                    top: "5px",
+                    right: "10px",
+                    backgroundColor: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    color: "#ff4d4f",
+                  }}
+                  onClick={() => setError(null)}
+                >
+                  ×
+                </button>
+              </div>
           )}
+
         </div>
       );
     };

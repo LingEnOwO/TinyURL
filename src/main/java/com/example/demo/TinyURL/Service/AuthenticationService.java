@@ -38,6 +38,10 @@ public class AuthenticationService {
         if (userRepository.existsByEmail(request.getEmail())){
             throw new IllegalArgumentException("Email already exists");
         }
+        // Validate password length
+        if (request.getPassword().length() < 8) {
+            throw new IllegalArgumentException("Password must be at least 8 characters long");
+        }
 
         // Hash the password
         String hashedPassword = passwordEncoder.encode(request.getPassword());

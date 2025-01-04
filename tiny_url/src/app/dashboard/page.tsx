@@ -83,13 +83,14 @@ const DashboardPage: React.FC = () => {
             );
 
             if (!response.ok) {
-                const errorMessage = await response.text();
-                setError(errorMessage || "Failed to rename the URL.");
+                const errorMessage = await response.json();
+                setError(errorMessage.message || "Failed to rename the URL.");
+                setTimeout(() => { setError(null);}, 2000);
             }
             else {
                 setSuccess("Short URL renamed successfully.");
                 // Clear success message after 3 seconds
-                setTimeout(() => { setSuccess(null);}, 3000);
+                setTimeout(() => { setSuccess(null);}, 2000);
                 // Refresh the URLs
                 const refreshedResponse = await fetch(`http://localhost:8080/api/users/urls`,{
                     headers: { "Authorization": `Bearer ${token}` },
@@ -133,7 +134,7 @@ const DashboardPage: React.FC = () => {
             if (response.ok) {
                 setSuccess("Long URL updated successfully");
                 // Clear success message after 3 seconds
-                setTimeout(() => { setSuccess(null);}, 3000);
+                setTimeout(() => { setSuccess(null);}, 2000);
                 // Refresh the URLs
                 const refreshedResponse = await fetch(`http://localhost:8080/api/users/urls`, {
                     headers: { "Authorization": `Bearer ${token}` },
@@ -144,8 +145,8 @@ const DashboardPage: React.FC = () => {
                 }
             }
             else {
-                const errorMessage = await response.text();
-                setError(errorMessage || "Failed to update the long URL");
+                const errorMessage = await response.json();
+                setError(errorMessage.message || "Failed to update the long URL");
             }
         } catch (err) {
             console.error("Error updating long URL:", err);
@@ -174,7 +175,7 @@ const DashboardPage: React.FC = () => {
             if (response.ok) {
               setSuccess("Short URL deleted successfully.");
               // Clear success message after 3 seconds
-              setTimeout(() => { setSuccess(null);}, 3000);
+              setTimeout(() => { setSuccess(null);}, 2000);
               // Refresh the list of URLs
               const refreshedResponse = await fetch(`http://localhost:8080/api/users/urls`, {
                   headers: { "Authorization": `Bearer ${token}` },
